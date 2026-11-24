@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#10151d">
+<title>Trading Command Centre</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{--bg:#0b1017;--panel:#141c27;--panel2:#192433;--line:#263548;--text:#edf3fb;--muted:#8fa0b5;--gold:#e4b84f;--green:#39c98a;--red:#f07878;--blue:#79aef7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Arial,sans-serif}
+header{padding:20px 16px 14px;background:linear-gradient(135deg,#182333,#10151d);border-bottom:1px solid var(--line)}
+.brand{font-size:11px;letter-spacing:2px;color:var(--gold);font-weight:bold}.title{font-size:23px;font-weight:700;margin:7px 0 4px}.sub{color:var(--muted);font-size:12px}
+.wrap{max-width:900px;margin:auto;padding:14px 14px 90px}
+.notice{border:1px solid #69552a;background:#2a2417;color:#f3d998;padding:11px;border-radius:10px;font-size:12px;line-height:1.5;margin-bottom:14px}
+.tabs{display:flex;gap:7px;overflow:auto;margin:0 0 14px}.tab{background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:10px 13px;border-radius:9px;white-space:nowrap}.tab.active{color:var(--gold);border-color:var(--gold);background:#262316}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:13px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.section{font-size:16px;font-weight:bold;margin:0 0 4px}.hint{font-size:12px;color:var(--muted);line-height:1.45}
+label{display:block;color:var(--muted);font-size:12px;margin:13px 0 6px}
+select,input{width:100%;background:#0d141d;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:12px;font-size:14px;outline:none}
+button{border:0;border-radius:9px;padding:11px 14px;font-weight:bold;cursor:pointer}
+.primary{background:var(--gold);color:#17130a}.secondary{background:#243449;color:var(--text);border:1px solid #354b64}.danger{background:#3a2226;color:#ffb0b0;border:1px solid #704047}
+.badge{font-size:11px;padding:6px 9px;border-radius:20px;background:#263449;color:#a9c9f9}.badge.good{background:#15382e;color:#70e0b0}.badge.warn{background:#3b301b;color:#f3d998}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:#0e151e;border:1px solid var(--line);border-radius:10px;padding:12px}.metric small{color:var(--muted);display:block;margin-bottom:7px}.metric strong{font-size:18px}
+.broker{display:flex;align-items:center;gap:11px}.logo{width:38px;height:38px;border-radius:10px;background:#263449;display:grid;place-items:center;color:var(--gold);font-weight:bold}
+.brokerlist{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.brokeropt{padding:12px;border:1px solid var(--line);border-radius:10px;background:#0e151e;color:var(--text);text-align:left}.brokeropt.selected{border-color:var(--gold);background:#292416}.brokeropt span{display:block;color:var(--muted);font-size:11px;margin-top:4px}
+.statusline{display:flex;align-items:center;gap:8px;color:var(--green);font-size:12px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+.instance{background:#0e151e;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:9px}
+.instance strong{display:block;margin-bottom:5px}.instance small{color:var(--muted)}
+.hidden{display:none}.footer{position:fixed;bottom:0;left:0;right:0;background:#101720;border-top:1px solid var(--line);padding:10px;text-align:center;color:var(--muted);font-size:11px}
+@media(max-width:430px){.grid{grid-template-columns:1fr 1fr}.brokerlist{grid-template-columns:1fr 1fr}.title{font-size:21px}}
+</style>
+</head>
+<body>
+<header><div class="brand">TRADING COMMAND CENTRE</div><div class="title">Broker Management</div><div class="sub">Stage 2 · Demo workspace</div></header>
+<div class="wrap">
+<div class="notice"><b>SIMULATION ONLY:</b> This is a phone-friendly prototype. Selecting a broker changes the demo screen only. It does not connect to MT5, request login details, or place trades.</div>
+<nav class="tabs">
+<button class="tab active" data-tab="broker">Broker</button><button class="tab" data-tab="overview">Overview</button><button class="tab" data-tab="strategies">Strategies</button><button class="tab" data-tab="instances">Chart instances</button><button class="tab" data-tab="settings">Settings</button>
+</nav>
+<section id="broker">
+<div class="card">
+<div class="row"><div><h2 class="section">Select broker</h2><div class="hint">Choose the broker environment you want this demo workspace to represent.</div></div><span class="badge">MT5 style</span></div>
+<div class="brokerlist" id="brokerlist">
+<button class="brokeropt selected" data-broker="Exness">EX <b>Exness</b><span>MT5 broker</span></button>
+<button class="brokeropt" data-broker="XM">XM <b>XM</b><span>MT5 broker</span></button>
+<button class="brokeropt" data-broker="IC Markets">IC <b>IC Markets</b><span>MT5 broker</span></button>
+<button class="brokeropt" data-broker="Pepperstone">PE <b>Pepperstone</b><span>MT5 broker</span></button>
+<button class="brokeropt" data-broker="Other MT5 broker">MT <b>Other MT5 broker</b><span>Generic option</span></button>
+</div>
+<label>Account environment</label><select id="environment"><option>DEMO / SIMULATION</option></select>
+<div style="margin-top:14px" class="row"><div><div class="hint">Selected broker</div><b id="selectedBroker">Exness</b></div><span class="badge warn" id="connectionBadge">Not connected</span></div>
+<div style="margin-top:14px" class="row"><button class="primary" id="connect">Start demo simulation</button><button class="secondary" id="disconnect">Disconnect</button></div>
+<div id="connectionMessage" class="hint" style="margin-top:12px">No simulated session is active.</div>
+</div>
+<div class="card"><h2 class="section">Account preview</h2><div class="hint" style="margin-bottom:12px">Sample figures only — not account data.</div><div class="grid"><div class="metric"><small>Balance</small><strong>$1,000.00</strong></div><div class="metric"><small>Equity</small><strong>$1,000.00</strong></div><div class="metric"><small>Open positions</small><strong>0</strong></div><div class="metric"><small>Environment</small><strong style="font-size:14px;color:var(--green)">DEMO</strong></div></div></div>
+</section>
+<section id="overview" class="hidden">
+<div class="card"><h2 class="section">Command overview</h2><p class="hint">Your workspace is set up for three strategy families. All controls remain simulated.</p><div class="grid"><div class="metric"><small>Broker</small><strong id="overviewBroker">Exness</strong></div><div class="metric"><small>Connection</small><strong id="overviewStatus" style="font-size:14px">Offline</strong></div><div class="metric"><small>Strategies</small><strong>3</strong></div><div class="metric"><small>Chart instances</small><strong id="instanceCount">0</strong></div></div></div>
+</section>
+<section id="strategies" class="hidden">
+<div class="card"><h2 class="section">Strategy controls</h2><div class="hint">Switches only change the local demo display.</div>
+<div class="instance"><div class="row"><div><strong>CRT Three Candle</strong><small>Three-candle concept</small></div><button class="secondary toggle">Start</button></div></div>
+<div class="instance"><div class="row"><div><strong>VWAP Mean Reversion</strong><small>Return-toward-VWAP concept</small></div><button class="secondary toggle">Start</button></div></div>
+<div class="instance"><div class="row"><div><strong>VWAP + EMA</strong><small>VWAP and EMA concept</small></div><button class="secondary toggle">Start</button></div></div>
+</div>
+</section>
+<section id="instances" class="hidden">
+<div class="card"><h2 class="section">Add chart instance</h2><div class="hint">Create separate demo rows for different strategy, symbol, and timeframe combinations.</div>
+<label>Strategy</label><select id="strategy"><option>CRT Three Candle</option><option>VWAP Mean Reversion</option><option>VWAP + EMA</option></select>
+<label>Instrument</label><select id="symbol"><option>XAUUSD</option><option>EURUSD</option><option>GBPJPY</option><option>USDJPY</option><option>BTCUSD</option><option>XAGUSD</option></select>
+<label>Timeframe</label><select id="timeframe"><option>M1</option><option>M3</option><option>M5</option><option>M15</option><option>M30</option><option>H1</option><option>H4</option></select>
+<button class="primary" id="addInstance" style="margin-top:14px;width:100%">Add demo instance</button>
+<div id="instancesList"></div>
+</div>
+</section>
+<section id="settings" class="hidden">
+<div class="card"><h2 class="section">Global demo limits</h2><div class="hint">These are saved only in this browser prototype and do not control a broker account.</div>
+<label>Maximum lot-size setting (demo reference)</label><input id="maxLot" type="number" min="0.01" step="0.01" value="0.05">
+<label>Maximum open positions (demo reference)</label><input id="maxPositions" type="number" min="1" step="1" value="5">
+<button class="primary" id="saveSettings" style="margin-top:14px;width:100%">Save demo settings</button><div id="settingsMessage" class="hint" style="margin-top:10px"></div>
+</div>
+</section>
+</div>
+<div class="footer">TRADING COMMAND CENTRE · DEMO PROTOTYPE · NO LIVE TRADING</div>
+<script>
+let chosen='Exness', connected=false, count=0;
+const tabs=document.querySelectorAll('.tab');
+tabs.forEach(b=>b.addEventListener('click',()=>{tabs.forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));document.getElementById(b.dataset.tab).classList.remove('hidden')}));
+document.querySelectorAll('.brokeropt').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.brokeropt').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');chosen=b.dataset.broker;document.getElementById('selectedBroker').textContent=chosen;document.getElementById('overviewBroker').textContent=chosen;connected=false;updateConnection()}));
+function updateConnection(){let badge=document.getElementById('connectionBadge');badge.textContent=connected?'Demo simulation active':'Not connected';badge.className='badge '+(connected?'good':'warn');document.getElementById('overviewStatus').textContent=connected?'Demo active':'Offline';document.getElementById('connectionMessage').textContent=connected?'Demo simulation started for '+chosen+'. This is a local visual state only; no broker connection was made.':'No simulated session is active.'}
+document.getElementById('connect').onclick=()=>{connected=true;updateConnection()};document.getElementById('disconnect').onclick=()=>{connected=false;updateConnection()};
+document.querySelectorAll('.toggle').forEach(b=>b.onclick=()=>{let on=b.textContent==='Start';b.textContent=on?'Stop':'Start';b.className=on?'danger':'secondary'});
+document.getElementById('addInstance').onclick=()=>{let st=document.getElementById('strategy').value,sy=document.getElementById('symbol').value,tf=document.getElementById('timeframe').value;let d=document.createElement('div');d.className='instance';d.innerHTML='<div class="row"><div><strong></strong><small></small></div><button class="danger">Remove</button></div>';d.querySelector('strong').textContent=st;d.querySelector('small').textContent=sy+' · '+tf+' · Demo';d.querySelector('button').onclick=()=>{d.remove();count--;document.getElementById('instanceCount').textContent=count};document.getElementById('instancesList').appendChild(d);count++;document.getElementById('instanceCount').textContent=count};
+document.getElementById('saveSettings').onclick=()=>{let lot=Number(document.getElementById('maxLot').value),pos=Number(document.getElementById('maxPositions').value);document.getElementById('settingsMessage').textContent=(lot>0&&pos>=1)?'Demo settings saved in this browser.':'Enter a lot value above 0 and a position limit of at least 1.'};
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body></html>
